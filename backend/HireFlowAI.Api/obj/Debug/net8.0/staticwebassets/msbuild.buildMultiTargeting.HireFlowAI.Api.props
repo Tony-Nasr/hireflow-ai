@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\HireFlowAI.Api.props" />
-</Project>
