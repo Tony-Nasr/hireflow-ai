@@ -1,3 +1,4 @@
+import JobListings from "@/pages/candidate/JobListings"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Login from "@/pages/auth/Login"
 import Register from "@/pages/auth/Register"
@@ -12,7 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
+        <Route path="/jobs" element={<JobListings />} />
         <Route
           path="/hr/dashboard"
           element={
