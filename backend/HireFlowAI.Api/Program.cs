@@ -50,7 +50,8 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddScoped<TokenService>();
-
+builder.Services.AddScoped<FileStorageService>();
+builder.Services.AddHttpContextAccessor();
 // CORS (so your React app on localhost:5173 can call this API)
 builder.Services.AddCors(options =>
 {
@@ -70,6 +71,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
