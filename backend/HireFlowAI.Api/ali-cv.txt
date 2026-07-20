@@ -1,0 +1,1 @@
+﻿Ali Hassan - Senior .NET Developer. Skills: .NET 8, ASP.NET Core, React, TypeScript, PostgreSQL, Docker, Azure. Experience: 5 years enterprise development at Lebanese bank. Education: Computer Science LAU.

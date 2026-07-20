@@ -16,11 +16,19 @@ namespace HireFlowAI.Api.Controllers
     {
         private readonly AppDbContext _context;
         private readonly FileStorageService _fileStorage;
+        private readonly GroqService _groqService;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public ApplicationController(AppDbContext context, FileStorageService fileStorage)
+        public ApplicationController(
+            AppDbContext context,
+            FileStorageService fileStorage,
+            GroqService groqService,
+            IServiceScopeFactory scopeFactory)
         {
             _context = context;
             _fileStorage = fileStorage;
+            _groqService = groqService;
+            _scopeFactory = scopeFactory;
         }
 
         private string CurrentUserId =>
@@ -43,6 +51,7 @@ namespace HireFlowAI.Api.Controllers
                 return BadRequest(new { message = "Please upload your CV." });
 
             var cvUrl = await _fileStorage.UploadCvAsync(cv);
+            var cvText = await ReadFileTextAsync(cv);
 
             var application = new Application
             {
@@ -55,7 +64,38 @@ namespace HireFlowAI.Api.Controllers
             _context.Applications.Add(application);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Application submitted successfully.", applicationId = application.Id });
+            var applicationId = application.Id;
+            var jobTitle = job.Title;
+            var jobDescription = job.Description;
+            var jobRequirements = job.Requirements;
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var (score, feedback) = await _groqService.ScoreCvAsync(
+                        cvText, jobTitle, jobDescription, jobRequirements);
+
+                    // Create a NEW scope with its own DbContext
+                    using var scope = _scopeFactory.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                    var app = await db.Applications.FindAsync(applicationId);
+                    if (app != null)
+                    {
+                        app.AiScore = score;
+                        app.AiFeedback = feedback;
+                        await db.SaveChangesAsync();
+                        Console.WriteLine($"AI scoring complete: {score}/100 for application {applicationId}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"AI scoring failed: {ex.Message}");
+                }
+            });
+
+            return Ok(new { message = "Application submitted successfully.", applicationId });
         }
 
         [HttpGet("my-applications")]
@@ -144,6 +184,54 @@ namespace HireFlowAI.Api.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = $"Stage updated to {dto.Stage}." });
+        }
+
+        [HttpPost("{id}/generate-questions")]
+        [Authorize(Roles = "HR")]
+        public async Task<IActionResult> GenerateInterviewQuestions(int id)
+        {
+            var application = await _context.Applications
+                .Include(a => a.Job)
+                .ThenInclude(j => j.Company)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (application == null)
+                return NotFound(new { message = "Application not found." });
+
+            if (application.Job.Company.UserId != CurrentUserId)
+                return Forbid();
+
+            var questions = await _groqService.GenerateInterviewQuestionsAsync(
+                "Experienced .NET and React developer with 3 years experience.",
+                application.Job.Title,
+                application.Job.Requirements
+            );
+
+            var interviewQuestions = questions.Select(q => new InterviewQuestion
+            {
+                ApplicationId = application.Id,
+                Question = q,
+                GeneratedByAI = true
+            }).ToList();
+
+            _context.InterviewQuestions.AddRange(interviewQuestions);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { questions });
+        }
+
+        private async Task<string> ReadFileTextAsync(IFormFile file)
+        {
+            try
+            {
+                using var reader = new StreamReader(file.OpenReadStream());
+                var text = await reader.ReadToEndAsync();
+                return text.Length > 3000 ? text.Substring(0, 3000) : text;
+            }
+            catch
+            {
+                return "CV text could not be extracted.";
+            }
         }
     }
 }

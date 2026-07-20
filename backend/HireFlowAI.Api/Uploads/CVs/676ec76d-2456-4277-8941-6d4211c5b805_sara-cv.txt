@@ -1,0 +1,6 @@
+?Sara Developer - Software Engineer
+Skills: .NET 8, ASP.NET Core, React, TypeScript, PostgreSQL, Docker, Git
+Experience: 3 years at Tech Company Lebanon as Full Stack Developer
+Education: Bachelor in Computer Science, LAU 2021
+Projects: Built e-commerce platform, HR management system
+Languages: Arabic, English, French
