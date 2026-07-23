@@ -97,6 +97,20 @@ namespace HireFlowAI.Api.Controllers
 
             return Ok(new { message = "Application submitted successfully.", applicationId });
         }
+/*
+[HttpGet("debug/companies")]
+[AllowAnonymous]
+public async Task<IActionResult> DebugCompanies()
+{
+    var companies = await _context.Companies
+        .Include(c => c.User)
+        .Select(c => new { c.Id, c.Name, c.UserId, Email = c.User.Email })
+        .ToListAsync();
+
+    return Ok(companies);
+}
+*/
+
 
         [HttpGet("my-applications")]
         [Authorize(Roles = "Candidate")]
@@ -165,26 +179,7 @@ namespace HireFlowAI.Api.Controllers
             return Ok(applications);
         }
 
-        [HttpPatch("{id}/stage")]
-        [Authorize(Roles = "HR")]
-        public async Task<IActionResult> UpdateStage(int id, UpdateStageDto dto)
-        {
-            var application = await _context.Applications
-                .Include(a => a.Job)
-                .ThenInclude(j => j.Company)
-                .FirstOrDefaultAsync(a => a.Id == id);
-
-            if (application == null)
-                return NotFound(new { message = "Application not found." });
-
-            if (application.Job.Company.UserId != CurrentUserId)
-                return Forbid();
-
-            application.Stage = dto.Stage;
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = $"Stage updated to {dto.Stage}." });
-        }
+        
 
         [HttpPost("{id}/generate-questions")]
         [Authorize(Roles = "HR")]
@@ -219,6 +214,29 @@ namespace HireFlowAI.Api.Controllers
 
             return Ok(new { questions });
         }
+
+
+
+[HttpPatch("{id}/stage")]
+[Authorize(Roles = "HR")]
+public async Task<IActionResult> UpdateStage(int id, [FromBody] UpdateStageDto dto)
+{
+    var application = await _context.Applications
+        .Include(a => a.Job)
+        .ThenInclude(j => j.Company)
+        .FirstOrDefaultAsync(a => a.Id == id);
+
+    if (application == null)
+        return NotFound(new { message = "Application not found." });
+
+    if (application.Job.Company.UserId != CurrentUserId)
+        return Forbid();
+
+    application.Stage = dto.Stage;
+    await _context.SaveChangesAsync();
+
+    return Ok(new { message = $"Stage updated to {dto.Stage}." });
+}
 
         private async Task<string> ReadFileTextAsync(IFormFile file)
         {

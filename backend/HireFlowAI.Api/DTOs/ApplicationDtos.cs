@@ -19,7 +19,7 @@ namespace HireFlowAI.Api.DTOs
     }
 
     public class UpdateStageDto
-    {
-        public ApplicationStage Stage { get; set; }
-    }
+{
+    public ApplicationStage Stage { get; set; }
+}
 }

@@ -1,11 +1,17 @@
 import JobListings from "@/pages/candidate/JobListings"
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route, useParams } from "react-router-dom"
 import Login from "@/pages/auth/Login"
 import Register from "@/pages/auth/Register"
 import HRDashboard from "@/pages/hr/HRDashboard"
 import CandidateDashboard from "@/pages/candidate/CandidateDashboard"
 import AdminDashboard from "@/pages/admin/AdminDashboard"
 import ProtectedRoute from "@/components/ProtectedRoute"
+import MyJobs from "@/pages/hr/MyJobs"
+
+function HRDashboardWrapper() {
+  const { jobId } = useParams();
+  return <HRDashboard jobId={Number(jobId)} />;
+}
 
 function App() {
   return (
@@ -14,14 +20,24 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/jobs" element={<JobListings />} />
+
         <Route
-          path="/hr/dashboard"
+          path="/hr/jobs/:jobId/dashboard"
           element={
             <ProtectedRoute allowedRoles={["HR"]}>
-              <HRDashboard />
+              <HRDashboardWrapper />
             </ProtectedRoute>
           }
         />
+
+<Route
+  path="/hr/dashboard"
+  element={
+    <ProtectedRoute allowedRoles={["HR"]}>
+      <MyJobs />
+    </ProtectedRoute>
+  }
+/>
 
         <Route
           path="/candidate/dashboard"

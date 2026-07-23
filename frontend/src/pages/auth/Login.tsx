@@ -21,8 +21,8 @@ export default function Login() {
       const { data } = await api.post("/Auth/login", { email, password })
       setAuth(data)
 
-      if (data.role === "HR") navigate("/hr/dashboard")
-      else if (data.role === "Candidate") navigate("/candidate/dashboard")
+if (data.role === "HR") navigate("/hr/dashboard")
+          else if (data.role === "Candidate") navigate("/candidate/dashboard")
       else if (data.role === "Admin") navigate("/admin/dashboard")
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed")
