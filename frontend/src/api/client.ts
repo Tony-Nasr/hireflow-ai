@@ -2,7 +2,7 @@ import axios from "axios"
 import { useAuthStore } from "@/store/authStore"
 
 const api = axios.create({
-  baseURL: "http://localhost:5219/api",
+  baseURL: "https://hireflow-ai-backend-d42g.onrender.com/api",
 })
 
 api.interceptors.request.use((config) => {
