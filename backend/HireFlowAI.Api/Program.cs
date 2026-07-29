@@ -53,12 +53,13 @@ builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<FileStorageService>();
 builder.Services.AddHttpClient<GroqService>();
 builder.Services.AddHttpContextAccessor();
-// CORS (so your React app on localhost:5173 can call this API)
+
+// CORS (Allow localhost and Vercel origins)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.SetIsOriginAllowed(origin => true) // Allows localhost & all Vercel URLs
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
