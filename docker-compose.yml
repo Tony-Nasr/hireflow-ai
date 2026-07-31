@@ -1,8 +1,9 @@
-version: '3.8'
+
 
 services:
   db:
     image: postgres:16
+    container_name: hireflow-db
     environment:
       POSTGRES_DB: hireflow_ai
       POSTGRES_USER: postgres
@@ -10,24 +11,41 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - hireflow_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
-    build: ./backend/HireFlowAI.Api
-    ports:
-      - "8080:8080"
+    build:
+      context: ./backend/HireFlowAI.Api
+      dockerfile: Dockerfile
+    container_name: hireflow-backend
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
       - ConnectionStrings__DefaultConnection=Host=db;Database=hireflow_ai;Username=postgres;Password=postgres
+      - Jwt__Key=your-super-secret-jwt-key-at-least-32-characters-long
+      - Jwt__Issuer=HireFlowAI
+      - Jwt__Audience=HireFlowAIUsers
+      - Jwt__ExpiryMinutes=60
+      - Groq__ApiKey=YOUR_GROQ_API_KEY
+    ports:
+      - "5219:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hireflow-frontend
     ports:
       - "3000:80"
     depends_on:
       - backend
 
 volumes:
-  pgdata:
+  hireflow_db_data:
