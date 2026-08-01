@@ -7,7 +7,7 @@ type Application = {
   coverLetter: string | null;
   aiScore: number | null;
   aiFeedback: string | null;
-  stage: string; // comes back as a string from ApplicationResponseDto (Stage.ToString())
+  stage: string;
   appliedAt: string;
   candidateName: string;
   candidateEmail: string;
@@ -15,7 +15,6 @@ type Application = {
   companyName: string;
 };
 
-// Order must match Models/ApplicationStage.cs exactly (0-4)
 const STAGES = ["Applied", "Reviewed", "Interview", "Hired", "Rejected"];
 
 export default function HRDashboard({ jobId }: { jobId: number }) {
@@ -68,9 +67,8 @@ export default function HRDashboard({ jobId }: { jobId: number }) {
                     </p>
                   )}
 
-                  <a
-                    {app.cvUrl && app.cvUrl.startsWith("http") && (
-                    
+                  {app.cvUrl && app.cvUrl.startsWith("http") && (
+                    <a
                       href={app.cvUrl}
                       target="_blank"
                       rel="noreferrer"
