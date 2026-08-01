@@ -69,7 +69,7 @@ export default function HRDashboard({ jobId }: { jobId: number }) {
                   )}
 
                   <a
-                    {app.cvUrl && !app.cvUrl.includes("/uploads/") && (
+                    {app.cvUrl && app.cvUrl.startsWith("http") && (
   
     href={app.cvUrl}
     target="_blank"
