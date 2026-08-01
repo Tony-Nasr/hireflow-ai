@@ -69,13 +69,16 @@ export default function HRDashboard({ jobId }: { jobId: number }) {
                   )}
 
                   <a
-                    href={app.cvUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs text-blue-600 underline block mt-2"
-                  >
-                    View CV
-                  </a>
+                    {app.cvUrl && !app.cvUrl.includes("/uploads/") && (
+  
+    href={app.cvUrl}
+    target="_blank"
+    rel="noreferrer"
+    className="text-xs text-blue-600 underline block mt-2"
+  >
+    View CV
+  </a>
+)}
 
                   <select
                     className="mt-2 w-full text-xs border rounded p-1"
